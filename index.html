@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>快消专项梳理 工作版</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    background: #f0f2f5;
+    padding: 40px 32px;
+    font-size: 12px;
+    color: #1a1a1a;
+  }
+  .page {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+    padding: 48px 52px 56px;
+  }
+
+  /* 顶部 */
+  .doc-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 24px;
+  }
+  .doc-title { font-size: 26px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.5px; }
+  .doc-title span { color: #ff2442; }
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .ref-box {
+    background: #fef5f5; border: 1px solid #fdd; border-radius: 8px;
+    padding: 8px 14px; font-size: 11.5px; color: #888; white-space: nowrap;
+  }
+  .ref-box a { color: #ff2442; text-decoration: none; }
+
+  #globalEditBtn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: 20px; border: none;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 0.18s; white-space: nowrap;
+    background: #f0f2f5; color: #555;
+  }
+  #globalEditBtn:hover { background: #e4e8f0; }
+  #globalEditBtn.active { background: #ff2442; color: #fff; box-shadow: 0 2px 8px rgba(255,36,66,0.3); }
+  #globalEditBtn svg { width: 13px; height: 13px; }
+
+  /* Objectives */
+  .objectives {
+    background: linear-gradient(135deg, #fff8f0, #fff3ea);
+    border: 1.5px solid #ffd0a0; border-radius: 12px;
+    padding: 14px 20px; margin-bottom: 32px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .objectives-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .objectives-text p { font-weight: 700; color: #d4600a; font-size: 12.5px; margin-bottom: 5px; }
+  .objectives-text li {
+    color: #666; font-size: 11.5px; list-style: none;
+    padding-left: 12px; position: relative; line-height: 1.7;
+  }
+  .objectives-text li::before { content: "·"; position: absolute; left: 2px; color: #d4600a; font-weight: 900; }
+
+  /* 大表格 */
+  .big-table-wrap {
+    width: 100%; border-radius: 14px; overflow: hidden;
+    border: 1.5px solid #e4e8f0; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 11.5px; table-layout: fixed; }
+
+  col.c-module { width: 80px; }
+  col.c-type  { width: 100px; }
+  col.c-work  { width: 160px; }
+  col.c-desc  { width: 230px; }
+  col.c-l1    { width: 66px; }
+  col.c-upper { width: 72px; }
+  col.c-sol   { width: 90px; }
+  col.c-mech  { width: 190px; }
+  col.c-exp   { width: 140px; }
+
+  /* 表头 */
+  thead tr { background: #1e2435; }
+  thead th {
+    color: #fff; font-weight: 600; padding: 12px 12px;
+    text-align: left; font-size: 11.5px; letter-spacing: 0.3px;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  thead th:last-child { border-right: none; }
+
+  /* 通用 td */
+  tbody td {
+    padding: 10px 12px; vertical-align: top; line-height: 1.6;
+    border-right: 1px solid #edf0f7; border-bottom: 1px solid #edf0f7;
+    color: #333; word-break: break-all;
+  }
+  tbody td:last-child { border-right: none; }
+
+  /* 专项模块列 */
+  td.module-cell {
+    vertical-align: middle;
+    text-align: center;
+    font-weight: 800;
+    font-size: 12px;
+    padding: 12px 8px;
+    white-space: pre-wrap;
+    border-right: 3px solid #c0c8e0;
+    background: #f4f6fb;
+    color: #2d3a5e;
+    letter-spacing: 0.5px;
+  }
+
+  /* 专项类型列（rowspan 合并，垂直居中） */
+  td.type-cell {
+    vertical-align: middle;
+    text-align: center;
+    font-weight: 700;
+    font-size: 12px;
+    border-right: 3px solid;
+    padding: 12px 10px;
+    white-space: pre-wrap;
+  }
+
+  /* 各类型配色 */
+  .t-client    { background: #eef3ff; color: #2d5fc9; border-right-color: #2d5fc9; }
+  .t-zhongcao  { background: #edfaf4; color: #1a8f5e; border-right-color: #1a8f5e; }
+  .t-zhongshou { background: #fff8ec; color: #c97a00; border-right-color: #c97a00; }
+  .t-effect    { background: #fff0f5; color: #c0336e; border-right-color: #c0336e; }
+  .t-search    { background: #f3f0ff; color: #6241cc; border-right-color: #6241cc; }
+  .t-brand     { background: #fff5ee; color: #c75e1e; border-right-color: #c75e1e; }
+  .t-ai        { background: #ecfbfd; color: #1190a3; border-right-color: #1190a3; }
+  .t-train     { background: #f5f5f7; color: #555;    border-right-color: #999; }
+  .t-pr        { background: #fdf5ef; color: #8b4513; border-right-color: #8b4513; }
+
+  /* 数据行底纹 */
+  tr.row-a td:not(.type-cell) { background: #ffffff; }
+  tr.row-b td:not(.type-cell) { background: #fafbfd; }
+  tr:hover td:not(.type-cell) { background: #f0f4ff !important; }
+
+  /* 专项工作 */
+  .work-name { font-weight: 600; color: #1a1a1a; font-size: 12px; line-height: 1.4; }
+
+  /* 描述列表 */
+  .desc-list { list-style: none; padding: 0; margin-top: 2px; }
+  .desc-list li { position: relative; padding-left: 11px; color: #555; font-size: 11px; line-height: 1.65; }
+  .desc-list li::before { content: "·"; position: absolute; left: 1px; color: #bbb; font-weight: 900; }
+  .desc-list a { color: #ff2442; text-decoration: none; }
+
+  /* 人员标签 */
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 11px; font-weight: 500; margin: 1px 1px; white-space: nowrap; }
+  .tag-l1    { background: #ddeaff; color: #1e4db7; }
+  .tag-upper { background: #fce8ef; color: #b5184b; }
+  .tag-sol   { background: #d9f5e9; color: #1a7a4a; }
+
+  .mech { color: #666; font-size: 11px; }
+  .mech a { color: #ff2442; text-decoration: none; }
+  .paused { color: #aaa; font-style: italic; font-size: 11px; }
+  .empty { color: #ccc; }
+
+  /* contenteditable */
+  [contenteditable="true"] {
+    outline: none; border-radius: 4px; min-width: 8px; min-height: 1em;
+    cursor: text; transition: background 0.12s, box-shadow 0.12s;
+    color: #333;   /* 强制基础字色，避免继承 .empty 的灰色 */
+  }
+  [contenteditable="true"]:hover { background: rgba(255,210,0,0.12); }
+  [contenteditable="true"]:focus { background: #fffbe6; box-shadow: 0 0 0 2px #ffd640; color: #1a1a1a; }
+
+  /* 编辑模式下 .empty 占位符变浅，不干扰新输入的文字 */
+  body.editing .empty { opacity: 0.4; font-style: italic; }
+
+  /* 编辑模式下 td 内所有文字统一黑色，让新增内容视觉一致 */
+  body.editing tbody td[contenteditable="true"] { color: #333; }
+
+  /* 编辑提示条 */
+  #editBanner {
+    display: none; position: fixed; top: 0; left: 0; right: 0;
+    background: #ff2442; color: #fff;
+    font-size: 12px; font-weight: 600; padding: 6px 16px; z-index: 999;
+    display: none; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  #editBanner.show { display: flex; }
+  body.editing { padding-top: 68px; }
+
+  /* 浮动格式工具栏 */
+  #fmtBar {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    background: #1e2435;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    padding: 4px 6px;
+    gap: 2px;
+    align-items: center;
+    pointer-events: auto;
+  }
+  #fmtBar.show { display: flex; }
+  .fmt-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 5px; border: none;
+    background: transparent; color: #fff; cursor: pointer;
+    font-size: 13px; font-weight: 700; transition: background 0.12s;
+  }
+  .fmt-btn:hover { background: rgba(255,255,255,0.15); }
+  .fmt-btn.active { background: rgba(255,255,255,0.25); }
+  .fmt-divider { width: 1px; height: 18px; background: rgba(255,255,255,0.2); margin: 0 3px; }
+
+  /* 图例 */
+  .legend { margin-top: 20px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<!-- 浮动格式工具栏 -->
+<div id="fmtBar">
+  <button class="fmt-btn" id="btnBold"    onclick="fmt('bold')"          title="加粗 (Ctrl+B)"><b>B</b></button>
+  <button class="fmt-btn" id="btnItalic"  onclick="fmt('italic')"        title="斜体 (Ctrl+I)"><i>I</i></button>
+  <button class="fmt-btn" id="btnUnder"   onclick="fmt('underline')"     title="下划线 (Ctrl+U)"><u>U</u></button>
+  <div class="fmt-divider"></div>
+  <button class="fmt-btn" id="btnColor"   onclick="fmt('foreColor','#ff2442')" title="红色高亮" style="color:#ff6b81;">A</button>
+  <button class="fmt-btn" id="btnClear"   onclick="fmt('removeFormat')"  title="清除格式" style="font-size:11px;font-weight:400;">✕格式</button>
+</div>
+
+<div id="editBanner">
+  <span>✏️ 编辑模式已开启 — 点击任意文字即可修改 &nbsp;·&nbsp; 退出编辑后自动发布，所有人刷新即可看到</span>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span id="deployStatus" style="font-size:11px;opacity:0.8;"></span>
+    <button onclick="clearStorage()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">🗑 清除保存</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="doc-top">
+    <div id="docTitle" class="doc-title">快消专项梳理 <span>工作版</span></div>
+    <div class="toolbar">
+      <div id="refBox" class="ref-box">
+        📎 参考：
+        <a href="https://docs.xiaohongshu.com/doc/f7bd6798bbb5dca24bcd497fbd612b5b" target="_blank">快消Upper 专项认领 副本</a>
+        &nbsp;·&nbsp;
+        <a href="https://docs.xiaohongshu.com/doc/e79ff3d064b1f8eecdf52adfdbb1ffd3" target="_blank">快消专项梳理</a>
+      </div>
+      <button id="globalEditBtn" onclick="toggleEdit()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>
+        编辑
+      </button>
+    </div>
+  </div>
+
+  <div class="objectives">
+    <div class="objectives-icon">🎯</div>
+    <div class="objectives-text">
+      <p id="objTitle">Objectives</p>
+      <ul id="objList">
+        <li>对齐商业化核心重点专项 + 培育快消重点自己行业特色专项</li>
+        <li>L1 / 行业 solution / Upper 三方协同，视专项重点安排人力，旨在发挥特长 &amp; 通过专项培养通盘视角 &amp; 能力提升（对客/产品迭代）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="big-table-wrap">
+    <table>
+      <colgroup>
+        <col class="c-module">
+        <col class="c-type">
+        <col class="c-work">
+        <col class="c-desc">
+        <col class="c-l1">
+        <col class="c-upper">
+        <col class="c-sol">
+        <col class="c-mech">
+        <col class="c-exp">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>专项模块</th>
+          <th>专项类型</th>
+          <th>专项工作</th>
+          <th>专项解释</th>
+          <th>L1</th>
+          <th>Upper</th>
+          <th>行业 solution</th>
+          <th>机制</th>
+          <th>专项产出 expectation</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- ══════════ 客户跃迁 × 3行 ══════════ -->
+        <tr class="row-a">
+          <td class="module-cell" rowspan="3">客户<br>跃迁</td>
+          <td class="type-cell t-client" rowspan="3">🙋<br>客户专项</td>
+          <td><div class="work-name">2T Agent 共创</div></td>
+          <td><ul class="desc-list">
+            <li>覆盖头部/重点客户，加深 CXO 级别渗透</li>
+            <li>利用 AI 快速甄别机会点，加速迭代</li>
+          </ul></td>
+          <td><span class="tag tag-l1">若雨</span></td>
+          <td><span class="tag tag-upper">贝拉</span></td>
+          <td><span class="tag tag-sol">摩可</span></td>
+          <td><span class="mech">TBD</span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>100% 重点客户 CXO 覆盖</li>
+            <li>认知升级，商机挖掘，平台口碑搭建</li>
+          </ul></td>
+        </tr>
+        <tr class="row-b">
+          <td><div class="work-name">薯光 100 计划 — 中腰部成长路径</div></td>
+          <td><ul class="desc-list">
+            <li>画像：新客客开 + 高潜/站外头客提升 ARPA</li>
+            <li>动作：种草效果验证（行业化）+ 监控提效 <a href="https://docs.xiaohongshu.com/doc/7ba6230db2f912cba41fbea085744a24" target="_blank">苍穹批量运营能力介绍</a>（宠物试点）</li>
+          </ul></td>
+          <td><span class="tag tag-l1">健良</span></td>
+          <td><span class="tag tag-upper">金博</span></td>
+          <td><span class="tag tag-sol">摩可</span><br><span class="tag tag-sol">窦昭</span></td>
+          <td><span class="mech">TBD</span></td>
+          <td>快消行业重点专项<ul class="desc-list">
+            <li>快消收入新增量</li>
+            <li>沉淀可复制打法 &amp; 带动行业整体跃迁</li>
+            <li>初期识别 ➡️ 定制计划 ➡️ 陪跑到位 ➡️ 成功跃迁</li>
+          </ul></td>
+        </tr>
+        <tr class="row-a">
+          <td><div class="work-name">快消行业方法论宣发 / To B 行业大会</div></td>
+          <td><ul class="desc-list">
+            <li>针对客户跃迁/种草深化/品广突破的行业特色方法论沉淀 &amp; 外宣</li>
+          </ul></td>
+          <td><span class="empty">TBD</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">摩可</span></td>
+          <td><span class="mech">TBD</span></td>
+          <td><ul class="desc-list">
+            <li>快消行业 To B 心智打造</li>
+            <li>放大行业影响力</li>
+          </ul></td>
+        </tr>
+
+        <!-- ══════════ 种草深化 × 15行（种草全链路8 + 种收一体1 + 种草效果化4 + 搜索1 + 蒲公英1） ══════════ -->
+        <tr class="row-b">
+          <td class="module-cell" rowspan="15">种草<br>深化</td>
+          <td class="type-cell t-zhongcao" rowspan="8">🌱<br>种草全链路</td>
+          <td><div class="work-name">挖掘机会：潜力 SPU</div></td>
+          <td><ul class="desc-list">
+            <li>赛道洞察 + 行业摸排，鉴定潜力做功 SPU</li>
+          </ul></td>
+          <td><span class="empty">TBD</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="paused">⏸ combine with Solid 1，看后续进展</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+        <tr class="row-a">
+          <td><div class="work-name">沉淀方法：种草 3.0</div></td>
+          <td><ul class="desc-list">
+            <li>种草方法论实践 case + 推进</li>
+            <li>种草产品提需 &amp; 迭代</li>
+            <li>种草基建推进</li>
+          </ul></td>
+          <td><span class="tag tag-l1">若雨</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">原雅</span></td>
+          <td><span class="mech">双周会监控种草方法论迭代 + 产品进展 &amp; 提需</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+        <tr class="row-b">
+          <td><div class="work-name">拓宽洞察：内容专项（蒲公英共建 KFS 一体化）</div></td>
+          <td><ul class="desc-list">
+            <li>分行业"好内容"标准共创</li>
+            <li>KFS 一体化方法论沉淀</li>
+            <li>场景 × 情绪内容升级</li>
+          </ul></td>
+          <td><span class="tag tag-l1">若雨</span></td>
+          <td><span class="tag tag-upper">光明</span></td>
+          <td><span class="tag tag-sol">原雅</span></td>
+          <td><span class="empty">—</span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>沉淀方法论，融合情绪新洞察</li>
+            <li>助力分行业内容质量跃迁</li>
+          </ul></td>
+        </tr>
+        <tr class="row-a">
+          <td><div class="work-name">细化度量：品牌度量体系</div></td>
+          <td><ul class="desc-list">
+            <li>情绪因子甄别</li>
+            <li>度量监控体系</li>
+            <li>品牌力指数</li>
+            <li>NPS / 口碑</li>
+            <li>舆情监控</li>
+          </ul></td>
+          <td><span class="tag tag-l1">若雨</span></td>
+          <td><span class="tag tag-upper">查克</span></td>
+          <td><span class="tag tag-sol">原雅</span></td>
+          <td><span class="mech">双周（比较早期，主要和产品共建，建议先以母婴 + 食饮为攻坚突破点）</span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>从 0 到 1 的产品 &amp; 能力突破</li>
+            <li>搭建快消/小红书商业化完整品牌度量体系</li>
+            <li>10 个头部客户参与试点，看到明显拉收效果</li>
+          </ul></td>
+        </tr>
+        <tr class="row-b">
+          <td><div class="work-name">投放实践：种草投放（小红星/盟、一方助攻）</div></td>
+          <td><ul class="desc-list">
+            <li>种草投放产品的业绩监控和产品 update</li>
+          </ul></td>
+          <td><span class="tag tag-l1">若雨</span></td>
+          <td><span class="tag tag-upper">玉鼎</span></td>
+          <td><span class="tag tag-sol">窦昭（可合并/取消）</span></td>
+          <td><span class="mech">双周会监控投放健康度 &amp; involve 产品提需（广告素材/K 笔记放开/京东新客 etc）<br><a href="https://docs.xiaohongshu.com/doc/e5d55fcfe9ecf0f27f6a09f6a9f74521" target="_blank">快消种草-投放专项双周会</a></span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+        <tr class="row-a">
+          <td><div class="work-name">验证效果：一方 + 线下一方回传</div></td>
+          <td><ul class="desc-list">
+            <li>一方回传目标 &amp; 进展监控</li>
+            <li>一方产品提需 &amp; 迭代</li>
+            <li>一方长效 ROI 验证</li>
+            <li>新回传链路拓展，如线下回传</li>
+          </ul></td>
+          <td><span class="tag tag-l1">若雨</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">原雅</span></td>
+          <td><span class="mech">双周会监控一方迭代 + 产品进展 &amp; 提需</span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>高质量一方回传覆盖率</li>
+            <li>创新分析维度搭建，赋能种草深化</li>
+            <li>高 ROI 拉收项目基石</li>
+          </ul></td>
+        </tr>
+        <tr class="row-b">
+          <td><div class="work-name">展示成果：潜力 SPU to Solid 1</div></td>
+          <td><ul class="desc-list">
+            <li>Solid 1 + Hypo1 标准确认</li>
+            <li>各赛道 Solid 1 追击</li>
+            <li>优秀 Solid 1 评比</li>
+          </ul></td>
+          <td><span class="empty">TBD</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="mech">按需收集 Solid 1 case 并评比</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+        <tr class="row-a">
+          <td><div class="work-name">卡点解决：审核 / 生态治理专项</div></td>
+          <td><ul class="desc-list">
+            <li>水下治理专题</li>
+            <li>审核数据监控体系</li>
+            <li>广审规则 SOP、生态治理 SOP 梳理 + 沉淀</li>
+            <li>创新 AI 产品推进</li>
+          </ul></td>
+          <td><span class="empty">NA</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">原雅</span></td>
+          <td><span class="mech">按需专项处理</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+        <!-- 种收一体 1行 -->
+        <tr class="row-b">
+          <td class="type-cell t-zhongshou" rowspan="1">🔄<br>种收一体</td>
+          <td><div class="work-name">闭环专项</div></td>
+          <td><ul class="desc-list">
+            <li>业绩追踪 + 过程指标追踪</li>
+            <li>产品测试、渗透、迭代共创</li>
+            <li>行业方法论 + case 沉淀</li>
+          </ul></td>
+          <td><span class="tag tag-l1">高更</span></td>
+          <td><span class="tag tag-upper">阿走</span></td>
+          <td><span class="tag tag-sol">查克（可交出）</span></td>
+          <td><span class="empty">—</span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>LTV case 验证种收一体，长期验证平台价值</li>
+            <li>广覆盖，高增长</li>
+          </ul></td>
+        </tr>
+        <!-- 种草效果化 4行 -->
+        <tr class="row-a">
+          <td class="type-cell t-effect" rowspan="4">💡<br>种草效果化</td>
+          <td><div class="work-name">开环专项</div></td>
+          <td><ul class="desc-list">
+            <li>业务健康度 + 拉收 + 产品共创 + 新链路打开（eg. 微小等）</li>
+          </ul></td>
+          <td><span class="tag tag-l1">高更</span></td>
+          <td><span class="tag tag-upper">玉鼎</span></td>
+          <td><span class="tag tag-sol">窦昭</span></td>
+          <td><span class="mech">双周会</span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>快消新增量，深度联动多平台推进种草效果化新时代</li>
+          </ul></td>
+        </tr>
+        <tr class="row-b">
+          <td><div class="work-name">红美客开</div></td>
+          <td><ul class="desc-list">
+            <li>食品饮料客户类型打开</li>
+          </ul></td>
+          <td><span class="tag tag-l1">伊森</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">窦昭</span></td>
+          <td><span class="mech">目前 badcase 提报审核下架</span></td>
+          <td>快消行业重点专项<ul class="desc-list">
+            <li>快消重点客开专项</li>
+            <li>助力食品饮料收入 &amp; 价值验证新台阶</li>
+          </ul></td>
+        </tr>
+        <tr class="row-a">
+          <td><div class="work-name">线下种草</div></td>
+          <td><ul class="desc-list">
+            <li>验证小红书线下种草价值</li>
+            <li>线下品渠联动 IP</li>
+            <li>聚光门店优投 + 碰一碰</li>
+            <li>线下一方</li>
+            <li>NNS + 核销等品牌广告</li>
+          </ul></td>
+          <td><span class="tag tag-l1">乔巴</span></td>
+          <td><span class="tag tag-upper">查克</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="mech">双周会</span></td>
+          <td>快消行业重点专项<ul class="desc-list">
+            <li>快消重点行业专项</li>
+            <li>助力多行业收入 &amp; 价值验证新台阶</li>
+          </ul></td>
+        </tr>
+        <tr class="row-b">
+          <td><div class="work-name">合作广场</div></td>
+          <td><ul class="desc-list">
+            <li>业绩追踪 + 方法论打造（目前做好奇外宣，新产品内测）</li>
+            <li>潜力 UGC 热点笔记识别（数据看板 + skills）</li>
+            <li>UGC 情绪/舆情识别</li>
+          </ul></td>
+          <td><span class="tag tag-l1">乔巴</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">窦昭</span></td>
+          <td><span class="mech">4 月开启内部周会（跟随产品节奏）</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+        <!-- 搜索 1行 -->
+        <tr class="row-a">
+          <td class="type-cell t-search" rowspan="1">🔍<br>搜索</td>
+          <td><div class="work-name">搜索专项</div></td>
+          <td><ul class="desc-list">
+            <li>业务健康度监控</li>
+            <li>拉收问题集中探讨</li>
+            <li>产品共创 + 功能迭代</li>
+          </ul></td>
+          <td><span class="tag tag-l1">乐蕴</span></td>
+          <td><span class="tag tag-upper">甜橙</span></td>
+          <td><span class="tag tag-sol">原雅</span></td>
+          <td><span class="mech">双周一次专项会 + 产品进展 &amp; 提需<br><a href="https://docs.xiaohongshu.com/doc/92169d834df8754f4e24a1f4de831723" target="_blank">快消搜索专项 26 年 3&amp;4 月</a></span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>分行业有策略有目标推进</li>
+            <li>助力商业化搜索产品更新</li>
+            <li>问一问未来商业化试水</li>
+          </ul></td>
+        </tr>
+        <!-- 蒲公英联动 1行 -->
+        <tr class="row-b">
+          <td class="type-cell" rowspan="1" style="background:#f3eaff;color:#7b3fbe;border-right:3px solid #7b3fbe;">🌼<br>蒲公英联动</td>
+          <td><div class="work-name">蒲公英专项</div></td>
+          <td><ul class="desc-list">
+            <li>快消 × 蒲公英赛道联动</li>
+          </ul></td>
+          <td><span class="tag tag-l1">丹丘</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">原雅</span></td>
+          <td><span class="empty">—</span></td>
+          <td>商业化重点专项<ul class="desc-list">
+            <li>快消 × 蒲公英深度握手</li>
+            <li>打开创作者/买手/内容新模式</li>
+          </ul></td>
+        </tr>
+
+        <!-- ══════════ 品广突破 × 2行 ══════════ -->
+        <tr class="row-a">
+          <td class="module-cell" rowspan="2">品广<br>突破</td>
+          <td class="type-cell t-brand" rowspan="2">📢<br>品牌广告</td>
+          <td><div class="work-name">IP 专项 + 品牌广告</div></td>
+          <td><ul class="desc-list">
+            <li>快消 IP solution 打造</li>
+            <li>品牌化广告产品创新</li>
+          </ul></td>
+          <td><span class="tag tag-l1">白泉</span></td>
+          <td><span class="tag tag-upper">修二</span><br><span class="tag tag-upper">宝妮</span></td>
+          <td><span class="tag tag-sol">摩可</span></td>
+          <td><span class="mech">月会（TBD 营销中心全年规划）</span></td>
+          <td>快消行业重点专项<ul class="desc-list">
+            <li>分行业定义快消 IP solution &amp; IP 交付价值</li>
+            <li>推进品牌化广告产品创新 &amp; 迭代</li>
+            <li>快消品广价值白皮书</li>
+          </ul></td>
+        </tr>
+        <tr class="row-b">
+          <td><div class="work-name">头部客户品牌化广告价值渗透</div></td>
+          <td><ul class="desc-list">
+            <li>快消品广价值验证</li>
+            <li>快消品广 To B 价值打造</li>
+          </ul></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+
+        <!-- ══════════ AI 提效 × 1行 ══════════ -->
+        <tr class="row-a">
+          <td class="module-cell" rowspan="1">AI<br>提效</td>
+          <td class="type-cell t-ai" rowspan="1">🤖<br>快消AI提效专项</td>
+          <td><div class="work-name">快消 AI 提效</div></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-l1">行业 solution</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="mech">按需开会 + 文档交互</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+
+        <!-- ══════════ 组织迭代 × 1行 ══════════ -->
+        <tr class="row-b">
+          <td class="module-cell" rowspan="1">组织<br>迭代</td>
+          <td class="type-cell t-train" rowspan="1">🎓<br>快消组织培训</td>
+          <td><div class="work-name">组织培训专项</div></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-l1">小源</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="tag tag-sol">摩可（可交出）</span></td>
+          <td><span class="empty">—</span></td>
+          <td><span class="empty">—</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span style="font-size:11px;color:#aaa;font-weight:600;letter-spacing:0.5px;">角色标注</span>
+    <span class="tag tag-l1">L1</span>
+    <span class="tag tag-upper">Upper</span>
+    <span class="tag tag-sol">行业 solution</span>
+    <span style="font-size:11px;color:#aaa;margin-left:12px;">⏸ 暂停专项</span>
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'xhs_zhuanxiang_v5';
+  const DEPLOY_SERVER = 'http://127.0.0.1:18899';
+  const WEBHOOK_URL = 'https://redcity-open.xiaohongshu.com/api/robot/webhook/send?key=299ecbdb-5ac6-491f-af71-188632bc46dd';
+  // 清除所有旧版本缓存
+  ['v1','v2','v3','v4'].forEach(v => localStorage.removeItem('xhs_zhuanxiang_' + v));
+  let isEditing = false;
+  const originalContent = new Map();
+
+  /* ===== 获取所有可编辑元素（含标题/参考/obj/module/type/数据td） ===== */
+  function getAllEditables() {
+    return [
+      document.getElementById('docTitle'),
+      document.getElementById('refBox'),
+      document.getElementById('objTitle'),
+      document.getElementById('objList'),
+      ...document.querySelectorAll('td.module-cell'),
+      ...document.querySelectorAll('td.type-cell'),
+      ...document.querySelectorAll('tbody td:not(.type-cell):not(.module-cell)'),
+    ].filter(Boolean);
+  }
+
+  /* ===== 持久化：保存所有可编辑元素到 localStorage ===== */
+  function saveToStorage() {
+    const els = getAllEditables();
+    const data = {};
+    els.forEach((el, i) => { data[i] = el.innerHTML; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  /* ===== 持久化：页面加载时恢复 ===== */
+  function loadFromStorage() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      const els = getAllEditables();
+      els.forEach((el, i) => {
+        if (data[i] !== undefined) el.innerHTML = data[i];
+      });
+    } catch(e) {}
+  }
+
+  /* 页面加载完成后恢复本地保存内容 */
+  document.addEventListener('DOMContentLoaded', loadFromStorage);
+
+  /* ===== 编辑模式开关 ===== */
+  function toggleEdit() {
+    isEditing = !isEditing;
+    const btn    = document.getElementById('globalEditBtn');
+    const banner = document.getElementById('editBanner');
+    const allEls = getAllEditables();
+    // 普通数据 td（用于变更检测）
+    const dataTds = document.querySelectorAll('tbody td:not(.type-cell):not(.module-cell)');
+
+    if (isEditing) {
+      allEls.forEach((el, i) => {
+        originalContent.set(i, el.innerHTML);
+        // 占位符清空（只对数据 td，标题/obj 保留）
+        if (el.classList && (el.classList.contains('module-cell') || el.classList.contains('type-cell') ||
+            el.closest('tbody'))) {
+          const text = el.innerText.trim();
+          if ((text === '—' || text === '') && !el.id) el.innerHTML = '';
+        }
+        el.contentEditable = 'true';
+      });
+
+      btn.classList.add('active');
+      btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2l1 1-10 10H2v-2L13 2z"/></svg> 完成并发布`;
+      banner.classList.add('show');
+      document.body.classList.add('editing');
+
+    } else {
+      hideFmtBar();
+
+      // 收集变更描述（在还原前）
+      const changes = collectChanges(allEls);
+
+      // 还原空格占位符 & 关闭编辑
+      allEls.forEach((el, i) => {
+        const orig    = originalContent.get(i);
+        const origDiv = document.createElement('div');
+        origDiv.innerHTML = orig || '';
+        const wasEmpty = origDiv.innerText.trim() === '—' || origDiv.innerText.trim() === '';
+        const nowEmpty = el.innerHTML.trim() === '';
+        if (wasEmpty && nowEmpty && !el.id) el.innerHTML = orig;
+        el.contentEditable = 'false';
+      });
+
+      // 对 L1 / Upper / 行业solution 列重新渲染 tag 样式
+      document.querySelectorAll('tbody tr').forEach(tr => {
+        const cells = Array.from(tr.querySelectorAll('td:not(.type-cell):not(.module-cell)'));
+        [{ idx: 2, cls: 'tag-l1' }, { idx: 3, cls: 'tag-upper' }, { idx: 4, cls: 'tag-sol' }]
+          .forEach(({ idx, cls }) => {
+            const td = cells[idx];
+            if (!td) return;
+            const text = td.innerText.trim();
+            if (!text || text === '—') return;
+            const allTags = Array.from(td.querySelectorAll('span.tag')).map(s => s.innerText).join('\n');
+            if (allTags.trim() === text) return;
+            const names = text.split(/[\n、\/]+/).map(s => s.trim()).filter(Boolean);
+            td.innerHTML = names.map(n => `<span class="tag ${cls}">${n}</span>`).join('<br>');
+          });
+      });
+
+      btn.classList.remove('active');
+      btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg> 编辑`;
+      banner.classList.remove('show');
+      document.body.classList.remove('editing');
+
+      // 保存到 localStorage
+      saveToStorage();
+
+      // 部署 + 推送
+      deployAndNotify(changes);
+    }
+  }
+
+  /* ===== 收集变更描述 ===== */
+  function collectChanges(allEls) {
+    const changes = [];
+    const colNames = ['专项工作', '专项解释', 'L1', 'Upper', '行业 solution', '机制', '专项产出 expectation'];
+
+    allEls.forEach((el, i) => {
+      const orig    = originalContent.get(i);
+      const origDiv = document.createElement('div');
+      origDiv.innerHTML = orig || '';
+      const origText = origDiv.innerText.trim().replace(/\s+/g, ' ');
+      const nowText  = el.innerText.trim().replace(/\s+/g, ' ');
+      if (origText === nowText) return;
+      if ((origText === '—' || origText === '') && (nowText === '—' || nowText === '')) return;
+
+      let label = '';
+      if (el.id === 'docTitle') label = '📌 网页标题';
+      else if (el.id === 'refBox') label = '📎 参考链接';
+      else if (el.id === 'objTitle') label = '🎯 Objectives 标题';
+      else if (el.id === 'objList') label = '🎯 Objectives 内容';
+      else if (el.classList && el.classList.contains('module-cell')) label = `📦 专项模块「${origText || nowText}」`;
+      else if (el.classList && el.classList.contains('type-cell')) label = `📋 专项类型「${origText || nowText}」`;
+      else {
+        const tr = el.closest('tr');
+        let workName = '';
+        const firstDataTd = tr ? tr.querySelector('td:not(.type-cell):not(.module-cell)') : null;
+        if (firstDataTd) workName = firstDataTd.innerText.trim().split('\n')[0];
+        const siblings = tr ? Array.from(tr.querySelectorAll('td:not(.type-cell):not(.module-cell)')) : [];
+        const colIdx = siblings.indexOf(el);
+        const colName = colNames[colIdx] || `列${colIdx}`;
+        label = `📝 「${workName}」→ ${colName}`;
+      }
+      changes.push(`${label}：「${origText || '空'}」→「${nowText || '空'}」`);
+    });
+
+    return changes;
+  }
+
+  /* ===== 复制 HTML 到剪贴板 ===== */
+  async function copyHTMLToClipboard() {
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    try {
+      await navigator.clipboard.writeText(html);
+      showCopyToast('✅ 已复制 HTML，直接粘贴给 AI 即可');
+    } catch(e) {
+      // 降级：选中文本
+      const ta = document.createElement('textarea');
+      ta.value = html;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showCopyToast('✅ 已复制 HTML，直接粘贴给 AI 即可');
+    }
+  }
+  function showCopyToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  /* ===== 部署并推送 webhook ===== */
+  async function deployAndNotify(changes) {
+    const statusEl = document.getElementById('deployStatus');
+    const banner   = document.getElementById('editBanner');
+
+    // 1. 先推 webhook（不依赖本地服务，直接可达）
+    const ts = new Date().toLocaleString('zh-CN');
+    const hasChanges = changes.length > 0;
+    const changeText = hasChanges ? changes.join('\n') : '（无内容变更）';
+    const msg = `📝 快消专项梳理 · 内容已更新\n\n${changeText}\n\n⏰ ${ts}\n\n（AI 正在自动重新部署，稍后会推送新链接）`;
+
+    const body = JSON.stringify({ msgtype: 'text', text: { content: msg } });
+    try {
+      // 优先用 sendBeacon（更可靠，不受页面卸载影响）
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: 'application/json' });
+        navigator.sendBeacon(WEBHOOK_URL, blob);
+      } else {
+        throw new Error('no beacon');
+      }
+    } catch(e) {
+      // 降级 fetch no-cors
+      try {
+        fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: body,
+          mode: 'no-cors'
+        });
+      } catch(e2) { /* 静默 */ }
+    }
+
+    if (!hasChanges) return;
+
+    // 2. 把最新 HTML 序列化后 POST 到本地服务（若可达则触发重部署）
+    banner.classList.add('show');
+    document.body.classList.add('editing');
+    if (statusEl) statusEl.textContent = '⏳ 正在发布…';
+
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+    let deployed = false;
+    try {
+      const resp = await fetch(DEPLOY_SERVER + '/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html, changes }),
+        signal: AbortSignal.timeout(5000)
+      });
+      if (resp.ok) {
+        if (statusEl) statusEl.textContent = '⏳ 部署中…';
+        // 轮询新 URL（最多 40 秒）
+        for (let i = 0; i < 40; i++) {
+          await new Promise(r => setTimeout(r, 1000));
+          try {
+            const ur = await fetch(DEPLOY_SERVER + '/latest-url');
+            const ud = await ur.json();
+            if (ud.url) {
+              deployed = true;
+              // 推送新链接
+              const msg2 = `✅ 快消专项梳理已重新发布\n🔗 ${ud.url}\n⏰ ${new Date().toLocaleString('zh-CN')}`;
+              const body2 = JSON.stringify({ msgtype:'text', text:{ content: msg2 }});
+              try {
+                if (navigator.sendBeacon) {
+                  navigator.sendBeacon(WEBHOOK_URL, new Blob([body2], {type:'application/json'}));
+                } else {
+                  fetch(WEBHOOK_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body: body2, mode:'no-cors'});
+                }
+              } catch(e){}
+              if (statusEl) statusEl.textContent = '✅ 已发布，机器人已推送新链接';
+              break;
+            }
+          } catch(e2) {}
+        }
+      }
+    } catch(e) {
+      // 本地服务不可达（HTTPS mixed-content 限制）
+      // 自动复制 HTML 到剪贴板，提示用户粘贴给 AI
+      if (statusEl) statusEl.textContent = '✅ 已复制 HTML，请粘贴给 AI 完成部署';
+      copyHTMLToClipboard();
+
+      let copyBar = document.getElementById('copyBar');
+      if (!copyBar) {
+        copyBar = document.createElement('div');
+        copyBar.id = 'copyBar';
+        copyBar.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#ff2442;color:#fff;border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(255,36,66,0.4);cursor:pointer;display:flex;align-items:center;gap:8px;';
+        copyBar.innerHTML = '📋 复制 HTML（发给 AI 自动部署）';
+        copyBar.onclick = copyHTMLToClipboard;
+        document.body.appendChild(copyBar);
+      }
+    }
+
+    setTimeout(() => {
+      banner.classList.remove('show');
+      document.body.classList.remove('editing');
+    }, deployed ? 4000 : 8000);
+  }
+
+  /* ===== 浮动格式工具栏 ===== */
+  const fmtBar = document.getElementById('fmtBar');
+  let fmtTimer = null;
+
+  function showFmtBar() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.toString().trim() === '') {
+      hideFmtBar(); return;
+    }
+    // 确认选区在可编辑 td 内
+    const anchor = sel.anchorNode;
+    const td = anchor && anchor.nodeType === 3 ? anchor.parentElement.closest('td') : (anchor && anchor.closest ? anchor.closest('td') : null);
+    if (!td || td.contentEditable !== 'true') { hideFmtBar(); return; }
+
+    const range = sel.getRangeAt(0);
+    const rect  = range.getBoundingClientRect();
+    const barW  = fmtBar.offsetWidth || 160;
+
+    let left = rect.left + window.scrollX + rect.width / 2 - barW / 2;
+    let top  = rect.top  + window.scrollY - fmtBar.offsetHeight - 8;
+
+    left = Math.max(8, Math.min(left, window.innerWidth - barW - 8));
+    if (top < window.scrollY + 8) top = rect.bottom + window.scrollY + 8;
+
+    fmtBar.style.left = left + 'px';
+    fmtBar.style.top  = top  + 'px';
+    fmtBar.classList.add('show');
+    updateFmtBtnState();
+  }
+
+  function hideFmtBar() {
+    fmtBar.classList.remove('show');
+  }
+
+  function updateFmtBtnState() {
+    document.getElementById('btnBold').classList.toggle('active',   document.queryCommandState('bold'));
+    document.getElementById('btnItalic').classList.toggle('active', document.queryCommandState('italic'));
+    document.getElementById('btnUnder').classList.toggle('active',  document.queryCommandState('underline'));
+  }
+
+  function fmt(cmd, val) {
+    document.execCommand(cmd, false, val || null);
+    updateFmtBtnState();
+    // 执行后让工具栏保持可见一小会儿
+    clearTimeout(fmtTimer);
+    fmtTimer = setTimeout(showFmtBar, 50);
+  }
+
+  // 选中文字时显示工具栏
+  document.addEventListener('mouseup', () => {
+    if (!isEditing) return;
+    clearTimeout(fmtTimer);
+    fmtTimer = setTimeout(showFmtBar, 80);
+  });
+
+  // 实时自动保存（防抖 800ms）
+  let saveTimer = null;
+  document.addEventListener('keyup', () => {
+    if (!isEditing) return;
+    clearTimeout(fmtTimer);
+    fmtTimer = setTimeout(showFmtBar, 80);
+    // 自动保存（tag 列在退出时才处理，这里只保存 innerHTML 快照）
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveToStorage, 800);
+  });
+
+  function clearStorage() {
+    if (confirm('确定清除本地保存的所有编辑内容？页面将刷新恢复原始数据。')) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  }
+
+  // 点击其他地方收起工具栏（但点工具栏本身不收起）
+  document.addEventListener('mousedown', (e) => {
+    if (fmtBar.contains(e.target)) return;
+    hideFmtBar();
+  });
+
+</script>
+
+</body>
+</html>
