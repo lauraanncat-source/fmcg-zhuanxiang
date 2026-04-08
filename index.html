@@ -644,8 +644,12 @@
 
 <script>
   const STORAGE_KEY = 'xhs_zhuanxiang_v5';
-  const DEPLOY_SERVER = 'http://127.0.0.1:18899';
   const WEBHOOK_URL = 'https://redcity-open.xiaohongshu.com/api/robot/webhook/send?key=299ecbdb-5ac6-491f-af71-188632bc46dd';
+  // GitHub Pages 配置
+  const GH_PAGES_URL = 'https://lauraanncat-source.github.io/fmcg-zhuanxiang/';
+  // 代理服务（解决 token 安全问题）
+  const PROXY_SERVER = 'http://127.0.0.1:18900';
+  const PROXY_KEY = 'fmcg-2024-secure';
   // 清除所有旧版本缓存
   ['v1','v2','v3','v4'].forEach(v => localStorage.removeItem('xhs_zhuanxiang_' + v));
   let isEditing = false;
@@ -824,102 +828,80 @@
     setTimeout(() => t.remove(), 3000);
   }
 
+  /* ===== 提交到 GitHub（通过代理服务） ===== */
+  async function commitToGitHub(html, message) {
+    const resp = await fetch(PROXY_SERVER + '/commit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': PROXY_KEY
+      },
+      body: JSON.stringify({
+        html: html,
+        message: message
+      })
+    });
+    
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || 'Commit failed');
+    }
+    return await resp.json();
+  }
+
   /* ===== 部署并推送 webhook ===== */
   async function deployAndNotify(changes) {
     const statusEl = document.getElementById('deployStatus');
     const banner   = document.getElementById('editBanner');
 
-    // 1. 先推 webhook（不依赖本地服务，直接可达）
     const ts = new Date().toLocaleString('zh-CN');
     const hasChanges = changes.length > 0;
-    const changeText = hasChanges ? changes.join('\n') : '（无内容变更）';
-    const msg = `📝 快消专项梳理 · 内容已更新\n\n${changeText}\n\n⏰ ${ts}\n\n（AI 正在自动重新部署，稍后会推送新链接）`;
-
-    const body = JSON.stringify({ msgtype: 'text', text: { content: msg } });
-    try {
-      // 优先用 sendBeacon（更可靠，不受页面卸载影响）
-      if (navigator.sendBeacon) {
-        const blob = new Blob([body], { type: 'application/json' });
-        navigator.sendBeacon(WEBHOOK_URL, blob);
-      } else {
-        throw new Error('no beacon');
-      }
-    } catch(e) {
-      // 降级 fetch no-cors
-      try {
-        fetch(WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: body,
-          mode: 'no-cors'
-        });
-      } catch(e2) { /* 静默 */ }
-    }
-
     if (!hasChanges) return;
 
-    // 2. 把最新 HTML 序列化后 POST 到本地服务（若可达则触发重部署）
     banner.classList.add('show');
     document.body.classList.add('editing');
-    if (statusEl) statusEl.textContent = '⏳ 正在发布…';
+    if (statusEl) statusEl.textContent = '⏳ 正在提交到 GitHub…';
 
     const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const commitMsg = `Update: ${changes.length} 处变更 - ${new Date().toISOString()}`;
 
-    let deployed = false;
     try {
-      const resp = await fetch(DEPLOY_SERVER + '/deploy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html, changes }),
-        signal: AbortSignal.timeout(5000)
-      });
-      if (resp.ok) {
-        if (statusEl) statusEl.textContent = '⏳ 部署中…';
-        // 轮询新 URL（最多 40 秒）
-        for (let i = 0; i < 40; i++) {
-          await new Promise(r => setTimeout(r, 1000));
-          try {
-            const ur = await fetch(DEPLOY_SERVER + '/latest-url');
-            const ud = await ur.json();
-            if (ud.url) {
-              deployed = true;
-              // 推送新链接
-              const msg2 = `✅ 快消专项梳理已重新发布\n🔗 ${ud.url}\n⏰ ${new Date().toLocaleString('zh-CN')}`;
-              const body2 = JSON.stringify({ msgtype:'text', text:{ content: msg2 }});
-              try {
-                if (navigator.sendBeacon) {
-                  navigator.sendBeacon(WEBHOOK_URL, new Blob([body2], {type:'application/json'}));
-                } else {
-                  fetch(WEBHOOK_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body: body2, mode:'no-cors'});
-                }
-              } catch(e){}
-              if (statusEl) statusEl.textContent = '✅ 已发布，机器人已推送新链接';
-              break;
-            }
-          } catch(e2) {}
+      // 提交到 GitHub
+      await commitToGitHub(html, commitMsg);
+      
+      if (statusEl) statusEl.textContent = '✅ 已提交，GitHub Pages 部署中…';
+      
+      // 推送成功通知
+      const pagesUrl = GH_PAGES_URL;
+      const msg = `✅ 快消专项梳理已更新\n🔗 ${pagesUrl}\n⏰ ${ts}\n\n变更内容：\n${changes.join('\n')}`;
+      
+      try {
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(WEBHOOK_URL, new Blob([JSON.stringify({
+            msgtype: 'text', text: { content: msg }
+          })], { type: 'application/json' }));
         }
-      }
+      } catch(e) {}
+      
+      if (statusEl) statusEl.textContent = '✅ 发布成功！所有人刷新可见';
+      
+      // 3 秒后刷新页面，显示最新内容
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+      
     } catch(e) {
-      // 本地服务不可达（HTTPS mixed-content 限制）
-      // 自动复制 HTML 到剪贴板，提示用户粘贴给 AI
-      if (statusEl) statusEl.textContent = '✅ 已复制 HTML，请粘贴给 AI 完成部署';
+      console.error('GitHub commit failed:', e);
+      if (statusEl) statusEl.textContent = '❌ 提交失败，请检查网络或联系管理员';
+      
+      // 降级：复制到剪贴板
       copyHTMLToClipboard();
-
-      let copyBar = document.getElementById('copyBar');
-      if (!copyBar) {
-        copyBar = document.createElement('div');
-        copyBar.id = 'copyBar';
-        copyBar.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;background:#ff2442;color:#fff;border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(255,36,66,0.4);cursor:pointer;display:flex;align-items:center;gap:8px;';
-        copyBar.innerHTML = '📋 复制 HTML（发给 AI 自动部署）';
-        copyBar.onclick = copyHTMLToClipboard;
-        document.body.appendChild(copyBar);
-      }
+      
+      setTimeout(() => {
+        banner.classList.remove('show');
+        document.body.classList.remove('editing');
+      }, 5000);
     }
-
-    setTimeout(() => {
-      banner.classList.remove('show');
-      document.body.classList.remove('editing');
-    }, deployed ? 4000 : 8000);
   }
 
   /* ===== 浮动格式工具栏 ===== */
